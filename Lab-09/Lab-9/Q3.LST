@@ -1,0 +1,86 @@
+     1                                  org 100h
+     2 00000000 E92C00                  jmp start
+     3                                  
+     4 00000003 70110100                num1 dw 1170h, 0001h
+     5 00000007 D0FB0100                num2 dw 0FBD0h, 0001h
+     6 0000000B 90D00300                num3 dw 0D090h, 0003h
+     7                                  
+     8 0000000F 0000                    total_lo dw 0
+     9 00000011 0000                    total_hi dw 0
+    10                                  
+    11 00000013 801A                    limit_lo dw 1A80h
+    12 00000015 0600                    limit_hi dw 0006h
+    13                                  
+    14 00000017 00                      over db 0
+    15                                  
+    16 00000018 0000                    half_lo dw 0
+    17 0000001A 0000                    half_hi dw 0
+    18                                  
+    19                                  add32:
+    20 0000001C 55                          push bp
+    21 0000001D 89E5                        mov bp, sp
+    22                                  
+    23 0000001F 8B460A                      mov ax, [bp+10]
+    24 00000022 034606                      add ax, [bp+6]
+    25                                  
+    26 00000025 8B5608                      mov dx, [bp+8]
+    27 00000028 135604                      adc dx, [bp+4]
+    28                                  
+    29 0000002B 5D                          pop bp
+    30 0000002C C20800                      ret 8
+    31                                  
+    32                                  start:
+    33 0000002F FF36[0F00]                  push word [total_lo]
+    34 00000033 FF36[1100]                  push word [total_hi]
+    35 00000037 FF36[0300]                  push word [num1]
+    36 0000003B FF36[0500]                  push word [num1+2]
+    37 0000003F E8DAFF                      call add32
+    38                                  
+    39 00000042 A3[0F00]                    mov [total_lo], ax
+    40 00000045 8916[1100]                  mov [total_hi], dx
+    41                                  
+    42 00000049 FF36[0F00]                  push word [total_lo]
+    43 0000004D FF36[1100]                  push word [total_hi]
+    44 00000051 FF36[0700]                  push word [num2]
+    45 00000055 FF36[0900]                  push word [num2+2]
+    46 00000059 E8C0FF                      call add32
+    47                                  
+    48 0000005C A3[0F00]                    mov [total_lo], ax
+    49 0000005F 8916[1100]                  mov [total_hi], dx
+    50                                  
+    51 00000063 FF36[0F00]                  push word [total_lo]
+    52 00000067 FF36[1100]                  push word [total_hi]
+    53 0000006B FF36[0B00]                  push word [num3]
+    54 0000006F FF36[0D00]                  push word [num3+2]
+    55 00000073 E8A6FF                      call add32
+    56                                  
+    57 00000076 A3[0F00]                    mov [total_lo], ax
+    58 00000079 8916[1100]                  mov [total_hi], dx
+    59                                  
+    60 0000007D C606[1700]00                mov byte [over], 0
+    61                                  
+    62 00000082 A1[1100]                    mov ax, [total_hi]
+    63 00000085 3B06[1500]                  cmp ax, [limit_hi]
+    64 00000089 770E                        ja set_over
+    65 0000008B 7211                        jb divide_total
+    66                                  
+    67 0000008D A1[0F00]                    mov ax, [total_lo]
+    68 00000090 3B06[1300]                  cmp ax, [limit_lo]
+    69 00000094 7703                        ja set_over
+    70 00000096 E90500                      jmp divide_total
+    71                                  
+    72                                  set_over:
+    73 00000099 C606[1700]01                mov byte [over], 1
+    74                                  
+    75                                  divide_total:
+    76 0000009E A1[0F00]                    mov ax, [total_lo]
+    77 000000A1 8B16[1100]                  mov dx, [total_hi]
+    78                                  
+    79 000000A5 D1EA                        shr dx, 1
+    80 000000A7 D1D8                        rcr ax, 1
+    81                                  
+    82 000000A9 A3[1800]                    mov [half_lo], ax
+    83 000000AC 8916[1A00]                  mov [half_hi], dx
+    84                                  
+    85 000000B0 B8004C                      mov ax, 4C00h
+    86 000000B3 CD21                        int 21h

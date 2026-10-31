@@ -1,0 +1,52 @@
+     1                                  org 100h
+     2 00000000 E92D00                  jmp start
+     3                                  
+     4 00000003 0900FDFF0E000000F8-     arr dw 9, -3, 14, 0, -8, 5, 22, -1
+     5 0000000C FF05001600FFFF     
+     6 00000013 0000                    swaps dw 0
+     7                                  
+     8                                  swap_if_greater:
+     9 00000015 50                          push ax
+    10 00000016 53                          push bx
+    11                                  
+    12 00000017 8B07                        mov ax, [bx]
+    13 00000019 3B4702                      cmp ax, [bx+2]
+    14 0000001C 7F04                        jg swap
+    15                                  
+    16 0000001E F8                          clc
+    17 0000001F 5B                          pop bx
+    18 00000020 58                          pop ax
+    19 00000021 C3                          ret
+    20                                  
+    21                                  swap:
+    22 00000022 FF37                        push word [bx]
+    23 00000024 FF7702                      push word [bx+2]
+    24 00000027 8F07                        pop word [bx]
+    25 00000029 8F4702                      pop word [bx+2]
+    26                                  
+    27 0000002C F9                          stc
+    28 0000002D 5B                          pop bx
+    29 0000002E 58                          pop ax
+    30 0000002F C3                          ret
+    31                                  
+    32                                  start:
+    33 00000030 B90700                      mov cx, 7
+    34                                  
+    35                                  pass_loop:
+    36 00000033 BB[0300]                    mov bx, arr
+    37 00000036 BA0700                      mov dx, 7
+    38                                  
+    39                                  compare_loop:
+    40 00000039 E8D9FF                      call swap_if_greater
+    41 0000003C 7304                        jnc no_swap
+    42 0000003E FF06[1300]                  inc word [swaps]
+    43                                  
+    44                                  no_swap:
+    45 00000042 81C30200                    add bx, 2
+    46 00000046 4A                          dec dx
+    47 00000047 75F0                        jnz compare_loop
+    48                                  
+    49 00000049 E2E8                        loop pass_loop
+    50                                  
+    51 0000004B B8004C                      mov ax, 4C00h
+    52 0000004E CD21                        int 21h
